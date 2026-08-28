@@ -1,10 +1,14 @@
 package ru.netology.MoneyTransferApplication.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class LoggerUtil {
+    private static final Logger log = LoggerFactory.getLogger(LoggerUtil.class);
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -19,7 +23,7 @@ public class LoggerUtil {
                 commission,
                 result
         );
-        System.out.println(logEntry);
+        log.info(logEntry);
     }
 
     private static String maskCardNumber(String cardNumber) {

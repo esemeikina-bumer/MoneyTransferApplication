@@ -39,7 +39,7 @@ Request body:
 ```json
 {
     "cardFromNumber": "1111222233334444",
-    "cardFromValidTill": "12/25",
+    "cardFromValidTill": "12/26",
     "cardFromCVV": "123",
     "cardToNumber": "5555666677778888",
     "amount": {
