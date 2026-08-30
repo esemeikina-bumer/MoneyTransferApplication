@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Money Transfer API", description = "API for money transfers between cards")
 public class TransferController {
 
+    private static final Logger log = LoggerFactory.getLogger(TransferController.class);
     private final TransferService transferService;
 
     @Autowired
@@ -26,12 +29,20 @@ public class TransferController {
         this.transferService = transferService;
     }
 
+    private String maskCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.length() < 16) {
+            return "****";
+        }
+        return "****" + cardNumber.substring(cardNumber.length() - 4);
+    }
+
     @PostMapping("/transfer")
     @Operation(summary = "Transfer money card to card",
             description = "Call to send money between cards")
     public ResponseEntity<TransferResponse> transfer(@Valid @RequestBody TransferRequest request) {
-        System.out.println("Received transfer request: from " +
-                request.getCardFromNumber() + " to " + request.getCardToNumber());
+        log.info("Received transfer request: from {} to {}",
+                maskCardNumber(request.getCardFromNumber()),
+                maskCardNumber(request.getCardToNumber()));
         TransferResponse response = transferService.transfer(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -40,7 +51,7 @@ public class TransferController {
     @Operation(summary = "Confirm operation",
             description = "Confirming operation with code")
     public ResponseEntity<TransferResponse> confirm(@Valid @RequestBody ConfirmationRequest request) {
-        System.out.println("Received confirmation request for operation: " + request.getOperationId());
+        log.info("Received confirmation request for operation: {}", request.getOperationId());
         TransferResponse response = transferService.confirm(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

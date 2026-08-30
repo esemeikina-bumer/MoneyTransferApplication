@@ -12,23 +12,13 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5500/health" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
-  # FRONT через Docker
-  frontend:
-    image: node:16-alpine
-    container_name: money-transfer-frontend
-    working_dir: /app
-    volumes:
-      - C:/Users/User/Java_learning/SpringBoot/money-transfer-frontend/card-transfer:/app
-    ports:
-      - "3000:3000"
-    command: sh -c "apk add --no-cache python3 py3-pip make g++ && npm install --legacy-peer-deps && npm install sass --legacy-peer-deps && npm start"
-    environment:
-      - REACT_APP_API_URL=http://money-transfer-service:5500
-    depends_on:
-      - money-transfer-service
-    networks:
-      - app-network
+
 
 networks:
   app-network:

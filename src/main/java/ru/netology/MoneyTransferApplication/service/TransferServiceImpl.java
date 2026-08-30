@@ -15,9 +15,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TransferServiceImpl implements TransferService {
+    private static final Logger log = LoggerFactory.getLogger(TransferServiceImpl.class);
 
     private final CardRepository cardRepository;
     private final ConcurrentHashMap<String, TransferRequest> pendingTransfers = new ConcurrentHashMap<>();
@@ -30,8 +33,12 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferResponse transfer(TransferRequest request) {
-        System.out.println("Processing transfer request from " +
-                request.getCardFromNumber() + " to " + request.getCardToNumber());
+//        System.out.println("Processing transfer request from " +
+//                request.getCardFromNumber() + " to " + request.getCardToNumber());
+          log.info("Processing transfer request from {} to {}",
+                maskCardNumber(request.getCardFromNumber()),
+                maskCardNumber(request.getCardToNumber()));
+
 
         // Конвертируем сумму из Integer в BigDecimal
         BigDecimal amount = BigDecimal.valueOf(request.getAmount().getValue());
@@ -70,11 +77,14 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferResponse confirm(ConfirmationRequest request) {
-        System.out.println("Confirming transfer with operation ID: " + request.getOperationId());
+        //System.out.println("Confirming transfer with operation ID: " + request.getOperationId());
+        log.info("Confirming transfer with operation ID: {}", request.getOperationId());
 
         TransferRequest transferRequest = pendingTransfers.get(request.getOperationId());
         if (transferRequest == null) {
-            throw new IllegalArgumentException("Invalid operation ID: " + request.getOperationId());
+            //throw new IllegalArgumentException("Invalid operation ID: " + request.getOperationId());
+            log.warn("Invalid operation ID: {}", request.getOperationId());
+            throw new IllegalArgumentException("Invalid operation ID");
         }
 
         // Простая проверка кода подтверждения
@@ -85,7 +95,7 @@ public class TransferServiceImpl implements TransferService {
                     amount,
                     calculateCommission(amount),
                     "FAILED - Invalid confirmation code");
-            throw new IllegalArgumentException("Invalid confirmation code: " + request.getCode());
+            throw new IllegalArgumentException("Invalid confirmation code");
         }
 
         // Выполняем перевод
@@ -148,5 +158,11 @@ public class TransferServiceImpl implements TransferService {
 
     private BigDecimal calculateCommission(BigDecimal amount) {
         return amount.multiply(COMMISSION_RATE).setScale(2, RoundingMode.HALF_UP);
+    }
+    private String maskCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.length() < 16) {
+            return "****";
+        }
+        return "****" + cardNumber.substring(cardNumber.length() - 4);
     }
 }

@@ -1,31 +1,15 @@
-2026-08-28 06:57:33 - Starting MoneyTransferApplication v1.0.0 using Java 21.0.12 with PID 1 (/app/app.jar started by root in /app)
-2026-08-28 06:57:33 - No active profile set, falling back to 1 default profile: "default"
-2026-08-28 06:57:34 - Tomcat initialized with port(s): 5500 (http)
-2026-08-28 06:57:34 - Starting service [Tomcat]
-2026-08-28 06:57:34 - Starting Servlet engine: [Apache Tomcat/10.1.15]
-2026-08-28 06:57:34 - Initializing Spring embedded WebApplicationContext
-2026-08-28 06:57:34 - Root WebApplicationContext: initialization completed in 1728 ms
-2026-08-28 06:57:35 - Tomcat started on port(s): 5500 (http) with context path ''
-2026-08-28 06:57:35 - Started MoneyTransferApplication in 3.857 seconds (process running for 5.49)
-2026-08-28 13:22:12 - Starting MoneyTransferApplication v1.0.0 using Java 21.0.12 with PID 1 (/app/app.jar started by root in /app)
-2026-08-28 13:22:12 - No active profile set, falling back to 1 default profile: "default"
-2026-08-28 13:22:13 - Tomcat initialized with port(s): 5500 (http)
-2026-08-28 13:22:13 - Starting service [Tomcat]
-2026-08-28 13:22:13 - Starting Servlet engine: [Apache Tomcat/10.1.15]
-2026-08-28 13:22:13 - Initializing Spring embedded WebApplicationContext
-2026-08-28 13:22:13 - Root WebApplicationContext: initialization completed in 1557 ms
-2026-08-28 13:22:14 - Tomcat started on port(s): 5500 (http) with context path ''
-2026-08-28 13:22:14 - Started MoneyTransferApplication in 3.105 seconds (process running for 4.523)
-2026-08-28 13:46:56 - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-08-28 13:46:56 - Initializing Servlet 'dispatcherServlet'
-2026-08-28 13:46:56 - Completed initialization in 1 ms
-2026-08-28 13:47:56 - [2026-08-28 13:47:56] From: ****7654 To: ****4444 Amount: 1000.00 Commission: 10.00 Result: PENDING - Awaiting confirmation
-2026-08-28 13:48:08 - [2026-08-28 13:48:08] From: ****7654 To: ****4444 Amount: 1000.00 Commission: 10.00 Result: SUCCESS
-2026-08-28 16:41:31 - [2026-08-28 16:41:31] From: ****7654 To: ****4444 Amount: 1000.00 Commission: 10.00 Result: PENDING - Awaiting confirmation
-2026-08-28 16:41:40 - [2026-08-28 16:41:40] From: ****7654 To: ****4444 Amount: 1000.00 Commission: 10.00 Result: SUCCESS
-2026-08-28 17:29:24 - [2026-08-28 17:29:24] From: ****7654 To: ****4444 Amount: 1000.00 Commission: 10.00 Result: FAILED - Insufficient funds
-2026-08-28 17:31:58 - [2026-08-28 17:31:58] From: ****7654 To: ****4444 Amount: 500.00 Commission: 5.00 Result: PENDING - Awaiting confirmation
-2026-08-28 17:32:13 - [2026-08-28 17:32:13] From: ****7654 To: ****4444 Amount: 500.00 Commission: 5.00 Result: SUCCESS
-2026-08-28 17:43:50 - [2026-08-28 17:43:50] From: ****7654 To: ****4444 Amount: 100.00 Commission: 1.00 Result: PENDING - Awaiting confirmation
-2026-08-28 17:44:23 - [2026-08-28 17:44:23] From: ****7654 To: ****4444 Amount: 100.00 Commission: 1.00 Result: SUCCESS
-2026-08-28 18:29:38 - [2026-08-28 18:29:38] From: ****7654 To: ****4444 Amount: 25.00 Commission: 0.25 Result: PENDING - Awaiting confirmation
+2026-08-30 16:11:32 - Init duration for springdoc-openapi is: 371 ms
+2026-08-30 17:21:42 - Starting MoneyTransferApplication v1.0.0 using Java 21.0.12 with PID 1 (/app/app.jar started by root in /app)
+2026-08-30 17:21:42 - No active profile set, falling back to 1 default profile: "default"
+2026-08-30 17:21:43 - Tomcat initialized with port(s): 5500 (http)
+2026-08-30 17:21:43 - Starting service [Tomcat]
+2026-08-30 17:21:43 - Starting Servlet engine: [Apache Tomcat/10.1.15]
+2026-08-30 17:21:43 - Initializing Spring embedded WebApplicationContext
+2026-08-30 17:21:43 - Root WebApplicationContext: initialization completed in 1137 ms
+2026-08-30 17:21:44 - Tomcat started on port(s): 5500 (http) with context path ''
+2026-08-30 17:21:44 - Started MoneyTransferApplication in 2.249 seconds (process running for 2.891)
+2026-08-30 17:22:11 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-30 17:22:11 - Initializing Servlet 'dispatcherServlet'
+2026-08-30 17:22:11 - Completed initialization in 1 ms
+2026-08-30 17:36:41 - [2026-08-30 17:36:41] From: ****7654 To: ****4444 Amount: 30.00 Commission: 0.30 Result: PENDING - Awaiting confirmation
+2026-08-30 17:36:52 - [2026-08-30 17:36:52] From: ****7654 To: ****4444 Amount: 30.00 Commission: 0.30 Result: SUCCESS
