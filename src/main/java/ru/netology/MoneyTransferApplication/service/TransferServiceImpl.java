@@ -7,46 +7,68 @@ import ru.netology.MoneyTransferApplication.model.TransferResponse;
 import ru.netology.MoneyTransferApplication.repository.CardRepository;
 import ru.netology.MoneyTransferApplication.exception.InsufficientFundsException;
 import ru.netology.MoneyTransferApplication.util.LoggerUtil;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Iterator;
 
 @Service
 public class TransferServiceImpl implements TransferService {
-    private static final Logger log = LoggerFactory.getLogger(TransferServiceImpl.class);
 
+    private static final Logger log = LoggerFactory.getLogger(TransferServiceImpl.class);
     private final CardRepository cardRepository;
-    private final ConcurrentHashMap<String, TransferRequest> pendingTransfers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PendingOperation> pendingTransfers = new ConcurrentHashMap<>();
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.01");
+    private static final long EXPIRATION_MINUTES = 5; // срок жизни операции в минутах
 
     @Autowired
     public TransferServiceImpl(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
+        // Запускаем фоновую очистку просроченных операций
+        //startCleanupScheduler();
+    }
+
+    // Класс для хранения операции с временем создания
+    private static class PendingOperation {
+        private final TransferRequest request;
+        private final LocalDateTime createdAt;
+
+        public PendingOperation(TransferRequest request) {
+            this.request = request;
+            this.createdAt = LocalDateTime.now();
+        }
+
+        public TransferRequest getRequest() {
+            return request;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public boolean isExpired() {
+            return LocalDateTime.now().isAfter(createdAt.plusMinutes(EXPIRATION_MINUTES));
+        }
     }
 
     @Override
     public TransferResponse transfer(TransferRequest request) {
-//        System.out.println("Processing transfer request from " +
-//                request.getCardFromNumber() + " to " + request.getCardToNumber());
-          log.info("Processing transfer request from {} to {}",
+        log.info("Processing transfer request from {} to {}",
                 maskCardNumber(request.getCardFromNumber()),
                 maskCardNumber(request.getCardToNumber()));
 
-
-        // Конвертируем сумму из Integer в BigDecimal
         BigDecimal amount = BigDecimal.valueOf(request.getAmount().getValue());
 
-        // Валидация карт
         validateCards(request);
 
-        // Проверка баланса
         Card fromCard = cardRepository.findCardByNumber(request.getCardFromNumber());
         BigDecimal commission = calculateCommission(amount);
         BigDecimal totalAmount = amount.add(commission);
@@ -61,33 +83,43 @@ public class TransferServiceImpl implements TransferService {
                     fromCard.getBalance() + ", Required: " + totalAmount);
         }
 
-        // Генерируем ID операции
         String operationId = UUID.randomUUID().toString();
-        pendingTransfers.put(operationId, request);
+        pendingTransfers.put(operationId, new PendingOperation(request));
 
-        // Логируем успешную валидацию
         LoggerUtil.logTransaction(request.getCardFromNumber(),
                 request.getCardToNumber(),
                 amount,
                 commission,
                 "PENDING - Awaiting confirmation");
 
+        // Логируем размер очереди
+        log.info("Pending operations count: {}", pendingTransfers.size());
+
         return new TransferResponse(operationId);
     }
 
     @Override
     public TransferResponse confirm(ConfirmationRequest request) {
-        //System.out.println("Confirming transfer with operation ID: " + request.getOperationId());
         log.info("Confirming transfer with operation ID: {}", request.getOperationId());
 
-        TransferRequest transferRequest = pendingTransfers.get(request.getOperationId());
-        if (transferRequest == null) {
-            //throw new IllegalArgumentException("Invalid operation ID: " + request.getOperationId());
+        // Удаляем просроченные операции перед проверкой
+        removeExpiredOperations();
+
+        PendingOperation pendingOperation = pendingTransfers.get(request.getOperationId());
+        if (pendingOperation == null) {
             log.warn("Invalid operation ID: {}", request.getOperationId());
-            throw new IllegalArgumentException("Invalid operation ID");
+            throw new IllegalArgumentException("Invalid operation ID: " + request.getOperationId());
         }
 
-        // Простая проверка кода подтверждения
+        // Проверка на просрочку (двойная проверка)
+        if (pendingOperation.isExpired()) {
+            pendingTransfers.remove(request.getOperationId());
+            log.warn("Operation expired: {}", request.getOperationId());
+            throw new IllegalArgumentException("Operation expired. Please repeat the transfer.");
+        }
+
+        TransferRequest transferRequest = pendingOperation.getRequest();
+
         if (!"1234".equals(request.getCode())) {
             BigDecimal amount = BigDecimal.valueOf(transferRequest.getAmount().getValue());
             LoggerUtil.logTransaction(transferRequest.getCardFromNumber(),
@@ -106,7 +138,6 @@ public class TransferServiceImpl implements TransferService {
         BigDecimal commission = calculateCommission(amount);
         BigDecimal totalAmount = amount.add(commission);
 
-        // Проверяем баланс еще раз (на случай, если изменился)
         if (fromCard.getBalance().compareTo(totalAmount) < 0) {
             pendingTransfers.remove(request.getOperationId());
             LoggerUtil.logTransaction(transferRequest.getCardFromNumber(),
@@ -125,7 +156,6 @@ public class TransferServiceImpl implements TransferService {
 
         pendingTransfers.remove(request.getOperationId());
 
-        // Логируем успешный перевод
         LoggerUtil.logTransaction(transferRequest.getCardFromNumber(),
                 transferRequest.getCardToNumber(),
                 amount,
@@ -133,6 +163,41 @@ public class TransferServiceImpl implements TransferService {
                 "SUCCESS");
 
         return new TransferResponse(request.getOperationId());
+    }
+
+    // Метод для удаления просроченных операций
+    private void removeExpiredOperations() {
+        Iterator<Map.Entry<String, PendingOperation>> iterator = pendingTransfers.entrySet().iterator();
+        int removedCount = 0;
+        while (iterator.hasNext()) {
+            Map.Entry<String, PendingOperation> entry = iterator.next();
+            if (entry.getValue().isExpired()) {
+                iterator.remove();
+                removedCount++;
+                log.debug("Removed expired operation: {}", entry.getKey());
+            }
+        }
+        if (removedCount > 0) {
+            log.info("Removed {} expired operations. Remaining: {}", removedCount, pendingTransfers.size());
+        }
+    }
+
+    // Фоновый планировщик очистки (запускается каждые 30 секунд)
+    private void startCleanupScheduler() {
+        Thread cleanupThread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(30000); // 30 секунд
+                    removeExpiredOperations();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        cleanupThread.setDaemon(true);
+        cleanupThread.start();
+        log.info("Cleanup scheduler started for pending operations");
     }
 
     private void validateCards(TransferRequest request) {
@@ -159,6 +224,7 @@ public class TransferServiceImpl implements TransferService {
     private BigDecimal calculateCommission(BigDecimal amount) {
         return amount.multiply(COMMISSION_RATE).setScale(2, RoundingMode.HALF_UP);
     }
+
     private String maskCardNumber(String cardNumber) {
         if (cardNumber == null || cardNumber.length() < 16) {
             return "****";
