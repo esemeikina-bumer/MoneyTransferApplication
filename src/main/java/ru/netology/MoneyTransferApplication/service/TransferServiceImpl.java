@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class TransferServiceImpl implements TransferService {
@@ -28,6 +29,8 @@ public class TransferServiceImpl implements TransferService {
     private final ConcurrentHashMap<String, PendingOperation> pendingTransfers = new ConcurrentHashMap<>();
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.01");
     private static final long EXPIRATION_MINUTES = 5; // срок жизни операции в минутах
+    @Value("${app.confirmation-code}")
+    private String confirmationCode;
 
     @Autowired
     public TransferServiceImpl(CardRepository cardRepository) {
@@ -120,7 +123,7 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest transferRequest = pendingOperation.getRequest();
 
-        if (!"1234".equals(request.getCode())) {
+        if (!confirmationCode.equals(request.getCode())) {
             BigDecimal amount = BigDecimal.valueOf(transferRequest.getAmount().getValue());
             LoggerUtil.logTransaction(transferRequest.getCardFromNumber(),
                     transferRequest.getCardToNumber(),
