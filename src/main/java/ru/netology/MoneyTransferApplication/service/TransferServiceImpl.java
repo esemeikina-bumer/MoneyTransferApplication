@@ -32,7 +32,7 @@ public class TransferServiceImpl implements TransferService {
     @Value("${app.confirmation-code}")
     private String confirmationCode;
 
-    @Autowired
+
     public TransferServiceImpl(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
         // Запускаем фоновую очистку просроченных операций

@@ -24,7 +24,7 @@ public class TransferController {
     private static final Logger log = LoggerFactory.getLogger(TransferController.class);
     private final TransferService transferService;
 
-    @Autowired
+
     public TransferController(TransferService transferService) {
         this.transferService = transferService;
     }

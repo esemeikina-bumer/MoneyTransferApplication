@@ -1,15 +1,18 @@
 package ru.netology.MoneyTransferApplication.repository;
 
 import ru.netology.MoneyTransferApplication.model.Card;
-
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 public class CardRepository {
     private final ConcurrentHashMap<String, Card> cards = new ConcurrentHashMap<>();
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/yy");
 
     public CardRepository() {
         // Инициализация тестовыми картами
@@ -33,7 +36,7 @@ public class CardRepository {
                 "1234567890123456",
                 "Alice Johnson",
                 "789",
-                "09/24",
+                "09/24",  // ← просроченная карта
                 new BigDecimal("7500.00"),
                 true
         ));
@@ -60,7 +63,37 @@ public class CardRepository {
         if (card == null || !card.isActive()) {
             return false;
         }
-        return card.getExpiryDate().equals(validTill) &&
-                card.getCvv().equals(cvv);
+
+        // Проверка CVV
+        if (!card.getCvv().equals(cvv)) {
+            return false;
+        }
+
+        // Проверка срока действия
+        if (!card.getExpiryDate().equals(validTill)) {
+            return false;
+        }
+
+        // Проверка, что срок действия не истёк
+        if (!isCardValid(card.getExpiryDate())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Проверяет, действительна ли карта по сроку действия
+     * @param expiryDate дата в формате MM/yy
+     * @return true, если карта действительна
+     */
+    private boolean isCardValid(String expiryDate) {
+        try {
+            YearMonth expiry = YearMonth.parse(expiryDate, DATE_FORMATTER);
+            YearMonth current = YearMonth.now();
+            return expiry.isAfter(current) || expiry.equals(current);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
