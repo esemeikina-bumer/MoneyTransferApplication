@@ -1,6 +1,8 @@
 package ru.netology.MoneyTransferApplication.exception;
 
 import ru.netology.MoneyTransferApplication.model.ErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,9 +17,11 @@ import java.util.UUID;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientFunds(InsufficientFundsException ex) {
-        System.err.println("Insufficient funds error: " + ex.getMessage());
+        log.error("Insufficient funds error: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage(),
                 generateErrorId()
@@ -27,7 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-        System.err.println("Illegal argument error: " + ex.getMessage());
+        log.error("Illegal argument error: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage(),
                 generateErrorId()
@@ -44,6 +48,8 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
+        log.warn("Validation errors: {}", errors);
+
         ErrorResponse error = new ErrorResponse(
                 "Validation failed: " + errors.toString(),
                 generateErrorId()
@@ -53,8 +59,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        System.err.println("Unexpected error: " + ex.getMessage());
-        ex.printStackTrace();
+        log.error("Unexpected error: ", ex);  // ← стектрейс попадёт в лог
         ErrorResponse error = new ErrorResponse(
                 "An unexpected error occurred: " + ex.getMessage(),
                 generateErrorId()
