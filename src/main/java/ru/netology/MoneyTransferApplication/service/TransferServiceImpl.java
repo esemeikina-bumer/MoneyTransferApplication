@@ -1,9 +1,9 @@
 package ru.netology.MoneyTransferApplication.service;
 
 import ru.netology.MoneyTransferApplication.model.Card;
-import ru.netology.MoneyTransferApplication.model.ConfirmationRequest;
-import ru.netology.MoneyTransferApplication.model.TransferRequest;
-import ru.netology.MoneyTransferApplication.model.TransferResponse;
+import ru.netology.MoneyTransferApplication.dto.ConfirmationRequest;
+import ru.netology.MoneyTransferApplication.dto.TransferRequest;
+import ru.netology.MoneyTransferApplication.dto.TransferResponse;
 import ru.netology.MoneyTransferApplication.repository.CardRepository;
 import ru.netology.MoneyTransferApplication.exception.InsufficientFundsException;
 import ru.netology.MoneyTransferApplication.util.LoggerUtil;

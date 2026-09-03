@@ -1,6 +1,6 @@
 package ru.netology.MoneyTransferApplication.exception;
 
-import ru.netology.MoneyTransferApplication.model.ErrorResponse;
+import ru.netology.MoneyTransferApplication.dto.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

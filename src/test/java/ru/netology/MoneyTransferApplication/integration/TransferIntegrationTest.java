@@ -1,8 +1,8 @@
 package ru.netology.MoneyTransferApplication.integration;
 
-import ru.netology.MoneyTransferApplication.model.ConfirmationRequest;
-import ru.netology.MoneyTransferApplication.model.TransferRequest;
-import ru.netology.MoneyTransferApplication.model.TransferResponse;
+import ru.netology.MoneyTransferApplication.dto.ConfirmationRequest;
+import ru.netology.MoneyTransferApplication.dto.TransferRequest;
+import ru.netology.MoneyTransferApplication.dto.TransferResponse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

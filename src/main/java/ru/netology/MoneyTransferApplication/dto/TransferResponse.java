@@ -1,4 +1,4 @@
-package ru.netology.MoneyTransferApplication.model;
+package ru.netology.MoneyTransferApplication.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
